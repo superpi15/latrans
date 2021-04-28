@@ -12,6 +12,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 bool build_cmap( char * oclassf, char * nclassf, std::map<int,int>& cmap ){
     int ccount = 0;
@@ -82,26 +83,45 @@ int latrans(char * filename, char * oclassf, char * nclassf, char * oimagef ){
         fprintf(stderr, "Cannot load image \"%s\"\nSTB Reason: %s\n", filename, stbi_failure_reason());
         exit(0);
     }
-    for( int i = 0; i < w*h*3; i += 3 ){
+
+    std::vector<unsigned char> oimage( w * h, 0 );
+    for( int i = 0; i < w*h; i ++ ){
         int r,g,b;
-        r = data[i+0];
-        g = data[i+1];
-        b = data[i+2];
+        int idx = i*3;
+        r = data[idx+0];
+        g = data[idx+1];
+        b = data[idx+2];
         int old_value = (r<<16) | (g<<8) | b;
         if( cmap.end() == cmap.find(old_value) ){ printf("cannot find class \'(%3d,%3d,%3d)\' in class map\n", r,g,b ); goto fail; }
         int new_value = cmap[old_value];
-        data[i+0] = (new_value & (255<<16))>>16;
-        data[i+1] = (new_value & (255<< 8))>> 8;
-        data[i+2] = (new_value & (255<< 0))>> 0;
-        data[i+2] = cmap[old_value];
+        oimage[i] = new_value;
     }
-
     {
         int stride_in_bytes = 0;
-        if( !stbi_write_png(oimagef, w, h, c, (unsigned char*)data, stride_in_bytes) ){
+        if( !stbi_write_png(oimagef, w, h, 1, (unsigned char*)oimage.data(), stride_in_bytes) ){
             printf("error writing png \'%s\'\n", oimagef);
         }
     }
+//    for( int i = 0; i < w*h*3; i += 3 ){
+//        int r,g,b;
+//        r = data[i+0];
+//        g = data[i+1];
+//        b = data[i+2];
+//        int old_value = (r<<16) | (g<<8) | b;
+//        if( cmap.end() == cmap.find(old_value) ){ printf("cannot find class \'(%3d,%3d,%3d)\' in class map\n", r,g,b ); goto fail; }
+//        int new_value = cmap[old_value];
+//        data[i+0] = (new_value & (255<<16))>>16;
+//        data[i+1] = (new_value & (255<< 8))>> 8;
+//        data[i+2] = (new_value & (255<< 0))>> 0;
+//        data[i+2] = cmap[old_value];
+//    }
+//    {
+//        int stride_in_bytes = 0;
+//        if( !stbi_write_png(oimagef, w, h, c, (unsigned char*)data, stride_in_bytes) ){
+//            printf("error writing png \'%s\'\n", oimagef);
+//        }
+//    }
+
     free(data);
 
     //printf("c = %d %d %d\n", c, w, h);
@@ -118,7 +138,7 @@ int main( int argc, char ** argv ){
     }
 
     std::string option = argv[1];
-    if( option == "latrans" ){
+    if( "latrans" == option ){
         if( argc < 1 + 5 ){
             printf("%18s: %-30s\n", "Usage", "latrans <image> <old class> <new class> <result>");
             printf("%18s: %-30s\n", "<image>", "input image");
