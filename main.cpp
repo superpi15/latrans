@@ -32,7 +32,7 @@ bool build_cmap( char * oclassf, char * nclassf, std::map<int,int>& cmap ){
 
 //        printf("%4d %4d %4d %s\n", r, g, b, cname.c_str());
 
-        if( nmap.end() != nmap.find(cname) ){ printf("redefine value of class \'%d\' in \'%s\'\n", cname.c_str(), oclassf ); goto fail; }
+        if( nmap.end() != nmap.find(cname) ){ printf("redefine value of class \'%c\' in \'%s\'\n", cname.c_str(), oclassf ); goto fail; }
         nmap[cname] = (r<<16) | (g<<8) | b;
 
 //        printf("%4d %4d %4d %s => %8d\n", r, g, b, cname.c_str(), nmap[cname]);
@@ -53,7 +53,7 @@ bool build_cmap( char * oclassf, char * nclassf, std::map<int,int>& cmap ){
         b = (old_value & (255<< 0))>> 0;
 
 //        printf("%8d = %4d %4d %4d %s\n", old_value, r, g, b, cname.c_str());
-        if( nmap.end() == nmap.find(cname) ){ printf("cannot find class \'%d\' in old class definition\n", cname.c_str() ); goto fail; }
+        if( nmap.end() == nmap.find(cname) ){ printf("cannot find class \'%c\' in old class definition\n", cname.c_str() ); goto fail; }
         if( cmap.end() != cmap.find(old_value) ){ printf("remap class \'(%3d,%3d,%3d)\' in new class definition\n", r,g,b ); goto fail; }
 //        printf("remap %d %d %d to %d\n", r,g,b, ccount );
         cmap[ old_value ] = ccount ++ ;
