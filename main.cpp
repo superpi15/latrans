@@ -41,6 +41,7 @@ bool build_cmap( char * oclassf, char * nclassf, std::map<int,int>& cmap ){
     ocf.close();
 
     ncf.open(nclassf);
+    ccount = nmap.size();
     while( std::getline( ncf, line ) ){
         if( line.empty() ) continue;
         std::istringstream lstr(line);
@@ -57,7 +58,7 @@ bool build_cmap( char * oclassf, char * nclassf, std::map<int,int>& cmap ){
         if( nmap.end() == nmap.find(cname) ){ printf("cannot find class \'%s\' in old class definition\n", cname.c_str() ); goto fail; }
         if( cmap.end() != cmap.find(old_value) ){ printf("remap class \'(%3d,%3d,%3d)\' in new class definition\n", r,g,b ); goto fail; }
 //        printf("remap %d %d %d to %d\n", r,g,b, ccount );
-        cmap[ old_value ] = ccount ++ ;
+        cmap[ old_value ] = ccount -- ;
     }
     ncf.close();
 
@@ -69,6 +70,7 @@ fail:
 
 int latrans(char * filename, char * oclassf, char * nclassf, char * oimagef ){
     int w, h, c;
+    int nError = 0;
     printf("name: img= %s wclass= %s %s \n", filename, oclassf, nclassf);
 
     std::map<int,int> cmap;
@@ -91,9 +93,16 @@ int latrans(char * filename, char * oclassf, char * nclassf, char * oimagef ){
         r = data[idx+0];
         g = data[idx+1];
         b = data[idx+2];
+        int new_value;
         int old_value = (r<<16) | (g<<8) | b;
-        if( cmap.end() == cmap.find(old_value) ){ printf("cannot find class \'(%3d,%3d,%3d)\' in class map\n", r,g,b ); goto fail; }
-        int new_value = cmap[old_value];
+        if( cmap.end() == cmap.find(old_value) ){
+            printf("cannot find class \'(%3d,%3d,%3d)\' in class map\n", r,g,b );
+            //goto fail;
+            nError ++ ;
+            new_value = 0;
+            //continue;
+        } else
+            new_value = cmap[old_value];
         oimage[i] = new_value;
     }
     {
