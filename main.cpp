@@ -244,8 +244,8 @@ int main( int argc, char ** argv ){
     } else
     if( "nlsb0" == option ){
         if( argc < 1 + 4 ){
-            printf("%18s: %-30s\n", "Usage", "<nlsb0> <nzero> <image> <result>");
-            printf("%18s: %-30s\n", "<nlsb0>", "input image");
+            printf("%18s: %-30s\n", "Usage", "nlsb0 <nzero> <image> <result>");
+            printf("%18s: %-30s\n", "<nzero>", "input image");
             printf("%18s: %-30s\n", "<image>", "input image");
             printf("%18s: %-30s\n", "<result>", "output image");
             return 1;
