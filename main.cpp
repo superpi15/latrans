@@ -139,6 +139,33 @@ fail:
     return 0;
 }
 
+
+int glance(char * filename ){
+    int w, h, c;
+    int nError = 0;
+    printf("name: img= %s \n", filename);
+
+    int channels = 0;
+    unsigned char *data = stbi_load(filename, &w, &h, &c, channels);
+    if (!data) {
+        fprintf(stderr, "Cannot load image \"%s\"\nSTB Reason: %s\n", filename, stbi_failure_reason());
+        exit(0);
+    }
+    int nPrinted = 0;
+    printf("w = %8d h = %8d c = %8d\n", w, h, c);
+    for( int i = 0; i < w*h*c && nPrinted < 50; i ++ ){
+        printf("%5d", data[ random()%(w*h*c) ]), nPrinted ++ ;
+    }
+    printf("\n");
+
+    free(data);
+
+    //printf("c = %d %d %d\n", c, w, h);
+    return 1;
+fail:
+    return 0;
+}
+
 int main( int argc, char ** argv ){
     if( argc < 2 ){
         printf("%10s: %-30s\n", "Usage", "./exe [option] [parameters]");
@@ -161,6 +188,16 @@ int main( int argc, char ** argv ){
         char * nclassf  = argv[2+2];
         char * oimagef  = argv[2+3];
         if( !latrans( filename, oclassf, nclassf, oimagef ) )
+            return 0;
+    } else 
+    if( "glance" == option ){
+        if( argc < 1 + 2 ){
+            printf("%18s: %-30s\n", "Usage", "glance <image>");
+            printf("%18s: %-30s\n", "<image>", "input image");
+            return 1;
+        }
+        char * filename = argv[2+0];
+        if( !glance( filename ) )
             return 0;
     }
 
