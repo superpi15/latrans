@@ -67,6 +67,48 @@ fail:
     return -1;
 }
 
+void nlsb0(int nzero, char * filename, char * oimagef){
+    int channels = 0;
+    int w, h, c;
+    unsigned char *data = stbi_load(filename, &w, &h, &c, channels);
+    if (!data) {
+        fprintf(stderr, "Cannot load image \"%s\"\nSTB Reason: %s\n", filename, stbi_failure_reason());
+        exit(0);
+    }
+    unsigned int mask = ~0 << nzero;
+    for( int i = 0; i < w*h*c; i ++ )
+        data[i] &= mask;
+
+    char * pos = strrchr(oimagef,'.');
+    if( pos ){
+        int res = 0;
+        pos ++; // point to char after .
+        for(char * c = pos; '\0'!=*c; c ++ ) *c = tolower(*c);
+        if( !strcmp(pos,"jpg") )
+            res = stbi_write_jpg(oimagef, w, h, c, data, 100);
+        else
+        if( !strcmp(pos,"png") )
+            res = stbi_write_png(oimagef, w, h, c, data, w*c);
+        else
+        if( !strcmp(pos,"bmp") )
+            res = stbi_write_bmp(oimagef, w, h, c, data);
+        else
+        if( !strcmp(pos,"tga") )
+            res = stbi_write_tga(oimagef, w, h, c, data);
+        else
+            printf("unsupported file extension \'.%s\'\n", pos);
+
+        if(res){
+            printf("From \'%s\' (%d,%d,%d) to \'%s\'\n", filename, w,h,c, oimagef );
+        } else
+            printf("writting fail: \'%s\'\n", oimagef);
+
+    } else {
+        printf("require extension specified in the given output filename '%s' \n", oimagef);
+    }
+
+    free(data);
+}
 
 int latrans(char * filename, char * oclassf, char * nclassf, char * oimagef ){
     int w, h, c;
@@ -199,6 +241,19 @@ int main( int argc, char ** argv ){
         char * filename = argv[2+0];
         if( !glance( filename ) )
             return 0;
+    } else
+    if( "nlsb0" == option ){
+        if( argc < 1 + 4 ){
+            printf("%18s: %-30s\n", "Usage", "<nlsb0> <nzero> <image> <result>");
+            printf("%18s: %-30s\n", "<nlsb0>", "input image");
+            printf("%18s: %-30s\n", "<image>", "input image");
+            printf("%18s: %-30s\n", "<result>", "output image");
+            return 1;
+        }
+        int nzero = atoi(argv[2+0]);
+        char * filename = argv[2+1];
+        char * oimagef  = argv[2+2];
+        nlsb0(nzero, filename, oimagef);
     }
 
     return 1;
